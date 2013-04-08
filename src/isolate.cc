@@ -1291,27 +1291,11 @@ void Isolate::DoThrow(Object* exception, MessageLocation* location) {
           FLAG_abort_on_uncaught_exception &&
           (report_exception || can_be_caught_externally)) {
         fatal_exception_depth++;
-        fprintf(stderr, "UNCAUGHT EXCEPTION: ");
-        exception->ShortPrint(stderr);
-
-        if (IsErrorObject(exception_handle)) {
-          Handle<String> key = factory()->InternalizeOneByteString(
-              STATIC_ASCII_VECTOR("message"));
-          MaybeObject *maybeMessage =
-            JSObject::cast(*exception_handle)->GetProperty(*key);
-          Object *messageObject;
-          if (maybeMessage->ToObject(&messageObject)) {
-            String *message = String::cast(messageObject);
-            fprintf(stderr, "\nEXCEPTION MESSAGE: ");
-            message->PrintOn(stderr);
-          }
-        }
-
-        fprintf(stderr, "\nFROM:\n");
+        fprintf(stderr, "%s\n\nFROM\n",
+          *MessageHandler::GetLocalizedMessage(this, message_obj));
         PrintCurrentStackTrace(stderr);
         OS::Abort();
       }
-
     } else if (location != NULL && !location->script().is_null()) {
       // We are bootstrapping and caught an error where the location is set
       // and we have a script for the location.
